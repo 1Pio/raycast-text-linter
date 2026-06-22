@@ -3,7 +3,7 @@
   "title": "Text Linter",
   "description": "Clean pasted Markdown and prose with configurable lint rules.",
   "icon": "icon.png",
-  "author": "1Pio",
+  "author": "roPio",
   "platforms": [
     "macOS"
   ],
