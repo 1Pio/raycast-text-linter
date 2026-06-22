@@ -103,6 +103,29 @@ Please give a deep memo with these sections:
     expect(lintText(input, settings).text).toBe("## hello world\n> quote\n- item\n- item 2\n");
   });
 
+  it("preserves markdown separators while normalizing real unordered list markers", () => {
+    const settings = settingsWith(["space-after-list-markers", "unordered-list-style"]);
+    const input = ["---", "* * *", "___", "+++", "-item", "*item", "- [ ]todo"].join("\n");
+
+    expect(lintText(input, settings).text).toBe(
+      ["---", "* * *", "___", "+++", "- item", "- item", "- [ ] todo"].join("\n"),
+    );
+  });
+
+  it("keeps horizontal rules intact with the bundled defaults", () => {
+    const settings = cloneDefaultSettings();
+    const input = "Intro\n---\nOutro";
+
+    expect(lintText(input, settings).text).toBe("Intro\n\n---\n\nOutro\n");
+  });
+
+  it("keeps checklist markers valid with the bundled defaults", () => {
+    const settings = cloneDefaultSettings();
+    const input = "- [ ]todo\n- [x]done";
+
+    expect(lintText(input, settings).text).toBe("- [ ] todo\n- [x] done\n");
+  });
+
   it("keeps fenced code contents intact while adding spacing around the block", () => {
     const settings = settingsWith(["empty-line-around-code-fences"]);
     const input = "# Heading\n```ts\nconst value = 1;\n```\nNext";

@@ -7,6 +7,7 @@ const yamlRegex = /^---\n([\s\S]*?)\n---(?=\n|$)/;
 const markdownLinkRegex = /(!?)\[([^\]\n]*)\]\(([^)]+)\)/g;
 const wikiLinkRegex = /(!?)\[\[([^\]\n|]+)(\|([^\]\n|]+))?(\|([^\]\n|]+))?\]\]/g;
 const horizontalRuleRegex = /^([ \t]{0,3})([-*_])(?:[ \t]*\2){2,}[ \t]*$/;
+const repeatedMarkerOnlyLineRegex = /^[ \t]*([-+*])(?:[ \t]*\1)+[ \t]*$/;
 
 export type RuleContext = {
   appliedRules: RuleId[];
@@ -264,9 +265,15 @@ function removeEmptyListMarkers(text: string): string {
 
 function spaceAfterListMarkers(text: string): string {
   return mapUnprotectedBlocks(text, (segment) =>
-    segment
-      .replace(/^(\s*\d+[.)]|\s*[-+*])([^\S\r\n]*)/gm, "$1 ")
-      .replace(/^(\s*[-+*]\s+\[[ xX]\])([^\S\r\n]*)/gm, "$1 "),
+    mapLines(segment, (line) => {
+      if (isSeparatorLikeLine(line)) {
+        return line;
+      }
+
+      return line
+        .replace(/^([ \t]*\d+[.)]|[ \t]*[-+*])([^\S\r\n]*)/, "$1 ")
+        .replace(/^([ \t]*[-+*]\s+\[[ xX]\])([^\S\r\n]*)/, "$1 ");
+    }),
   );
 }
 
@@ -302,9 +309,13 @@ function unorderedListStyle(text: string, settings: LinterSettings): string {
   const config = ruleConfig<{ "list-style"?: string }>(settings, "unordered-list-style");
   const style = config["list-style"] === "consistent" ? "-" : config["list-style"] || "-";
   return mapUnprotectedBlocks(text, (segment) =>
-    segment.replace(
-      /^([ \t]*)([-+*])(\s+(?!\[[^\n]\]\s).+)$/gm,
-      (_match, indent, _marker, rest) => `${indent}${style}${rest}`,
+    mapLines(segment, (line) =>
+      isSeparatorLikeLine(line)
+        ? line
+        : line.replace(
+            /^([ \t]*)([-+*])(\s+(?!\[[^\n]\]\s).+)$/,
+            (_match, indent, _marker, rest) => `${indent}${style}${rest}`,
+          ),
     ),
   );
 }
@@ -730,6 +741,17 @@ function splitCsv(value: string): string[] {
     .split(/[,\n]/)
     .map((word) => word.trim())
     .filter(Boolean);
+}
+
+function mapLines(text: string, transform: (line: string) => string): string {
+  return text
+    .split("\n")
+    .map((line) => transform(line))
+    .join("\n");
+}
+
+function isSeparatorLikeLine(line: string): boolean {
+  return horizontalRuleRegex.test(line) || repeatedMarkerOnlyLineRegex.test(line);
 }
 
 function escapeRegExp(value: string): string {

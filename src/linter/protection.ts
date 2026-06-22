@@ -108,6 +108,10 @@ export function withInlineProtection(text: string, transform: (text: string) => 
   };
 
   const protectedText = text
+    .replace(
+      /(^|\n)([ \t]*(?:[-+*]|\d+[.)])[ \t]+\[[ xX]\])/g,
+      (_match, lineStart: string, marker: string) => `${lineStart}${protect(marker)}`,
+    )
     .replace(/`[^`\n]+`/g, protect)
     .replace(/!\[[^\]\n]*\]\([^)]+\)/g, protect)
     .replace(/\[[^\]\n]*\]\([^)]+\)/g, protect)

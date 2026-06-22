@@ -48,21 +48,12 @@ export default function Command() {
 
   const result = useMemo(() => lintText(input, settings), [input, settings]);
   const html = useMemo(() => markdownToHtml(result.text), [result.text]);
+  const richContent = useMemo<Clipboard.Content>(() => ({ text: result.text, html }), [result.text, html]);
   const delta = result.stats.outputCharacters - result.stats.inputCharacters;
   const summary =
     input.length === 0
       ? "Paste text above to lint it."
       : `${result.stats.appliedRules.length} rule${result.stats.appliedRules.length === 1 ? "" : "s"} changed ${result.stats.changedLines} line${result.stats.changedLines === 1 ? "" : "s"} (${delta >= 0 ? "+" : ""}${delta} characters).`;
-
-  async function pasteRich() {
-    await Clipboard.paste({ text: result.text, html });
-    await showToast({ style: Toast.Style.Success, title: "Pasted Linted Text" });
-  }
-
-  async function pastePlain() {
-    await Clipboard.paste(result.text);
-    await showToast({ style: Toast.Style.Success, title: "Pasted Plain Text" });
-  }
 
   async function copyText() {
     await Clipboard.copy(result.text);
@@ -71,21 +62,21 @@ export default function Command() {
 
   const actions = (
     <ActionPanel>
-      <Action title="Copy Linted Text" icon={Icon.Clipboard} onAction={copyText} />
-      <Action title="Paste Linted Text" icon={Icon.TextCursor} onAction={pasteRich} />
+      <Action.Paste title="Paste Linted Text" icon={Icon.TextCursor} content={richContent} />
+      <Action title="Copy Linted Text" icon={Icon.Clipboard} autoFocus onAction={copyText} />
       <ActionPanel.Submenu
         title="Paste as…"
         icon={Icon.ArrowRight}
         shortcut={{ modifiers: ["cmd", "opt"], key: "enter" }}
       >
-        <Action title="HTML" icon={Icon.Code} onAction={pasteRich} />
-        <Action title="Plain Text" icon={Icon.Text} onAction={pastePlain} />
+        <Action.Paste title="HTML" icon={Icon.Code} content={richContent} />
+        <Action.Paste title="Plain Text" icon={Icon.Text} content={result.text} />
       </ActionPanel.Submenu>
-      <Action
+      <Action.Paste
         title="Paste Plain Text"
         icon={Icon.Text}
         shortcut={{ modifiers: ["cmd", "ctrl"], key: "enter" }}
-        onAction={pastePlain}
+        content={result.text}
       />
       <Action
         title="Save as File…"

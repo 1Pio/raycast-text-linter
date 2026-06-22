@@ -5,8 +5,10 @@ Text Linter is a Raycast extension for cleaning pasted Markdown and prose before
 It is optimized for fast clipboard workflows:
 
 - Paste or prefill text from the clipboard.
-- Copy the cleaned text.
-- Paste rich HTML or plain text into the frontmost app.
+- Paste rich HTML with `⌘↵`.
+- Paste as HTML or plain text with `⌥⌘↵`.
+- Paste plain text directly with `⌃⌘↵`.
+- Copy the cleaned text from the Action Panel.
 - Save the result through the native macOS save dialog.
 - Configure rules from a dedicated Raycast command.
 
