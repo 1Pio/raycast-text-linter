@@ -1,0 +1,90 @@
+{
+  "name": "text-linter",
+  "title": "Text Linter",
+  "description": "Clean pasted Markdown and prose with configurable lint rules.",
+  "icon": "icon.png",
+  "author": "1Pio",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Productivity"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "text",
+    "markdown",
+    "lint",
+    "format",
+    "writing",
+    "clipboard"
+  ],
+  "commands": [
+    {
+      "name": "lint-text",
+      "title": "Lint Text",
+      "description": "Paste text, lint it, then copy, paste, or save the cleaned result.",
+      "mode": "view",
+      "keywords": [
+        "clean",
+        "format",
+        "markdown",
+        "clipboard"
+      ]
+    },
+    {
+      "name": "configure-rules",
+      "title": "Configure Rules",
+      "description": "Customize Text Linter rules and restore the bundled defaults.",
+      "mode": "view",
+      "keywords": [
+        "settings",
+        "preferences",
+        "rules",
+        "format"
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "name": "prefillFromClipboard",
+      "title": "Clipboard",
+      "description": "Prefill the input field with the current clipboard text when Lint Text opens.",
+      "type": "checkbox",
+      "label": "Prefill from clipboard",
+      "default": true,
+      "required": false
+    },
+    {
+      "name": "defaultSaveFileName",
+      "title": "Save File Name",
+      "description": "The default filename shown in the Save as File dialog.",
+      "type": "textfield",
+      "default": "linted-text.md",
+      "placeholder": "linted-text.md",
+      "required": false
+    }
+  ],
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "lint": "ray lint",
+    "publish": "ray publish",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@raycast/api": "^1.104.19",
+    "@raycast/utils": "^2.2.6",
+    "marked": "^15.0.12"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.1.1",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "eslint": "^9.29.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
