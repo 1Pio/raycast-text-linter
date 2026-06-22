@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Resize the extension icon artwork to fill the 512x512 Raycast icon canvas more appropriately.
 - Preserve Markdown horizontal rules and separator-only marker lines during list cleanup.
 - Trim accidental blank padding just inside code, math, and triple-quote wrappers.
 - Use Raycast's native paste action for the primary linted-text paste workflow.
