@@ -8,6 +8,7 @@ const markdownLinkRegex = /(!?)\[([^\]\n]*)\]\(([^)]+)\)/g;
 const wikiLinkRegex = /(!?)\[\[([^\]\n|]+)(\|([^\]\n|]+))?(\|([^\]\n|]+))?\]\]/g;
 const horizontalRuleRegex = /^([ \t]{0,3})([-*_])(?:[ \t]*\2){2,}[ \t]*$/;
 const repeatedMarkerOnlyLineRegex = /^[ \t]*([-+*])(?:[ \t]*\1)+[ \t]*$/;
+const quoteWrapperLineRegex = /^[ \t]*(["'“”‘’]{3,})[ \t]*$/;
 
 export type RuleContext = {
   appliedRules: RuleId[];
@@ -637,7 +638,9 @@ function trailingSpaces(text: string, settings: LinterSettings): string {
 }
 
 function consecutiveBlankLines(text: string): string {
-  return text.replace(/(\n([\t\v\f\r \u00a0-\u200b\u2028-\u2029\u3000]+)?){2,}\n/g, "\n\n");
+  return trimBlankPaddingInsideQuoteWrappers(
+    text.replace(/(\n([\t\v\f\r \u00a0-\u200b\u2028-\u2029\u3000]+)?){2,}\n/g, "\n\n"),
+  );
 }
 
 function addBlankLineAfterYaml(text: string): string {
@@ -693,16 +696,20 @@ function ensureBlankLineAroundDelimitedBlocks(
     }
 
     const marker = match[2] ?? match[0].trim();
-    output.push(line);
+    const blockLines = [line];
+    let closed = false;
     index++;
 
     while (index < lines.length) {
-      output.push(lines[index]);
+      blockLines.push(lines[index]);
       if (isEnd(lines[index], marker)) {
+        closed = true;
         break;
       }
       index++;
     }
+
+    output.push(...trimBlankPaddingInsideBlockEdges(blockLines, closed));
 
     if (index < lines.length - 1 && lines[index + 1] !== "") {
       output.push("");
@@ -710,6 +717,92 @@ function ensureBlankLineAroundDelimitedBlocks(
   }
 
   return output.join("\n");
+}
+
+function trimBlankPaddingInsideQuoteWrappers(text: string): string {
+  return trimBlankPaddingInsideDelimitedBlocks(
+    text,
+    (line) => {
+      const match = line.match(quoteWrapperLineRegex);
+      if (!match || !quoteWrapperFamily(match[1])) {
+        return null;
+      }
+      return match;
+    },
+    (line, marker) => {
+      const match = line.match(quoteWrapperLineRegex);
+      return Boolean(match && quoteWrapperFamily(match[1]) === quoteWrapperFamily(marker));
+    },
+  );
+}
+
+function trimBlankPaddingInsideDelimitedBlocks(
+  text: string,
+  startMatch: (line: string) => RegExpMatchArray | null,
+  isEnd: (line: string, marker: string) => boolean,
+): string {
+  const lines = text.split("\n");
+  const output: string[] = [];
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    const match = startMatch(line);
+    if (!match) {
+      output.push(line);
+      continue;
+    }
+
+    const marker = match[1] ?? match[0].trim();
+    const blockLines = [line];
+    let closed = false;
+    index++;
+
+    while (index < lines.length) {
+      blockLines.push(lines[index]);
+      if (isEnd(lines[index], marker)) {
+        closed = true;
+        break;
+      }
+      index++;
+    }
+
+    output.push(...trimBlankPaddingInsideBlockEdges(blockLines, closed));
+  }
+
+  return output.join("\n");
+}
+
+function trimBlankPaddingInsideBlockEdges(blockLines: string[], closed: boolean): string[] {
+  if (!closed || blockLines.length < 3) {
+    return blockLines;
+  }
+
+  let firstContentIndex = 1;
+  let lastContentIndex = blockLines.length - 2;
+
+  while (firstContentIndex <= lastContentIndex && blockLines[firstContentIndex].trim() === "") {
+    firstContentIndex++;
+  }
+
+  while (lastContentIndex >= firstContentIndex && blockLines[lastContentIndex].trim() === "") {
+    lastContentIndex--;
+  }
+
+  return [
+    blockLines[0],
+    ...blockLines.slice(firstContentIndex, lastContentIndex + 1),
+    blockLines[blockLines.length - 1],
+  ];
+}
+
+function quoteWrapperFamily(marker: string): "single" | "double" | null {
+  if (/^["“”]+$/.test(marker)) {
+    return "double";
+  }
+  if (/^['‘’]+$/.test(marker)) {
+    return "single";
+  }
+  return null;
 }
 
 function ensureBlankLineAroundRuns(text: string, predicate: (line: string) => boolean): string {

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Preserve Markdown horizontal rules and separator-only marker lines during list cleanup.
+- Trim accidental blank padding just inside code, math, and triple-quote wrappers.
 - Use Raycast's native paste action for the primary linted-text paste workflow.
 
 ## 0.1.0

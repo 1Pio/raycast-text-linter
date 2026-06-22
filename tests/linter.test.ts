@@ -133,6 +133,26 @@ Please give a deep memo with these sections:
     expect(lintText(input, settings).text).toBe("# Heading\n\n```ts\nconst value = 1;\n```\n\nNext");
   });
 
+  it("trims accidental blank padding inside fenced code blocks", () => {
+    const settings = cloneDefaultSettings();
+    const input = ["```", "", "Some terminal command", "Some second command ", "", "Some third command", "", "```"].join(
+      "\n",
+    );
+
+    expect(lintText(input, settings).text).toBe(
+      ["```", "Some terminal command", "Some second command ", "", "Some third command", "```", ""].join("\n"),
+    );
+  });
+
+  it("trims accidental blank padding inside math and quote wrappers", () => {
+    const settings = cloneDefaultSettings();
+    const input = ['"""', "", "Wrapped prose", "", '"""', "", "$$", "", "x = y + z", "", "$$"].join("\n");
+
+    expect(lintText(input, settings).text).toBe(
+      ['"""', "Wrapped prose", '"""', "", "$$", "x = y + z", "$$", ""].join("\n"),
+    );
+  });
+
   it("handles footnote punctuation, re-indexing, and moving definitions", () => {
     const settings = settingsWith([
       "footnote-after-punctuation",
