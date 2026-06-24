@@ -11,6 +11,14 @@
     "Productivity"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1Pio/raycast-text-linter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/1Pio/raycast-text-linter/issues"
+  },
+  "homepage": "https://github.com/1Pio/raycast-text-linter#readme",
   "keywords": [
     "text",
     "markdown",
@@ -74,7 +82,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@raycast/api": "^1.104.19",
+    "@raycast/api": "^1.104.20",
     "@raycast/utils": "^2.2.6",
     "marked": "^15.0.12"
   },
